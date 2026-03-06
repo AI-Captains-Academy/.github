@@ -55,9 +55,60 @@ Run the Lead Getter on a niche. Pick your best leads. Drop each URL into the rec
 
 ## Requirements
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed and configured
-- An Anthropic API key with Claude access
+- An AI coding agent -- Claude Code (default), Codex, Gemini CLI, Cursor, Windsurf, or any agent that reads markdown instructions
 - For Lead Getter: an [Apify](https://apify.com) account (free tier works for 2-5 runs/month)
+- For AEO Audit: a [Google PageSpeed Insights API key](https://developers.google.com/speed/docs/insights/v5/get-started) is recommended (free, improves accuracy of performance data)
+
+---
+
+## Platform Compatibility
+
+The rigs ship configured for **Claude Code**, but the architecture is plain markdown files and shell commands -- nothing proprietary. Every rig can be adapted to run on other AI coding agents.
+
+### What makes a rig work
+
+Each rig is built from four pieces:
+
+| Piece | What It Is | Files |
+|-------|-----------|-------|
+| **Orchestrator** | Top-level instructions that run the pipeline | `CLAUDE.md` |
+| **Commands** | User-invoked workflows | `.claude/commands/*.md` |
+| **Agents** | Specialized worker instructions | `.claude/agents/*.md` |
+| **Skills** | Domain knowledge agents load themselves | `.claude/skills/*/SKILL.md` |
+
+These are all **markdown files with structured prompts**. There's no compiled code, no framework, no SDK. The agent reads the markdown, follows the instructions, and writes output to disk.
+
+### Adapting to other platforms
+
+The rigs use two Claude Code-specific conventions that need remapping:
+
+1. **`CLAUDE.md`** -- The system prompt / project instructions file. Rename or reconfigure for your platform:
+
+| Platform | What to do |
+|----------|-----------|
+| **Claude Code** | Works out of the box -- reads `CLAUDE.md` automatically |
+| **Codex** | Rename to `AGENTS.md` or paste into the system prompt |
+| **Gemini CLI** | Rename to `GEMINI.md` or use as project context |
+| **Cursor** | Move contents into `.cursorrules` or `.cursor/rules/*.md` |
+| **Windsurf** | Move contents into `.windsurfrules` |
+| **Other agents** | Paste into whatever file your agent reads as project instructions |
+
+2. **`/commands`** (`.claude/commands/*.md`) -- These are Claude Code's slash-command convention. On other platforms, just paste the command file contents as your prompt. The instructions inside work the same -- they tell the agent what to do step by step.
+
+### What works everywhere
+
+- **Agent files** (`.claude/agents/*.md`) -- These are prompts the orchestrator passes to sub-agents. Any platform that supports multi-agent spawning (or even single-agent sequential runs) can use them as-is.
+- **Skill files** (`.claude/skills/*/SKILL.md`) -- Domain knowledge in markdown. Any LLM can read these.
+- **Output structure** -- Rigs write to `output/` as plain files (markdown, HTML, CSV). No platform lock-in.
+- **Config** -- Member settings in `config/` are markdown files. Edit in any text editor.
+
+### What varies by platform
+
+- **Sub-agent spawning** -- Claude Code uses the Task tool to spawn parallel agents. Other platforms may need sequential runs or their own multi-agent patterns. The agent `.md` files still work -- you just invoke them differently.
+- **Web access** -- Rigs use `WebFetch` and `WebSearch` for research. Map these to your platform's equivalent (browse tool, web search plugin, etc.).
+- **Bash access** -- Some rigs call `curl` for free APIs. Most platforms support shell execution -- just make sure it's enabled.
+
+The rigs are designed as **portable prompt architectures**. The intelligence is in the markdown, not the platform.
 
 ---
 
@@ -153,4 +204,16 @@ If yes, it's an enhancement -- send a PR. If no, it's a personalization -- keep 
 
 ---
 
-Built by [AI Captains](https://www.skool.com/ai-captains)
+## Attribution
+
+- **Rig architecture**: [SAFe Agentic Workflow](https://github.com/bybren-llc/safe-agentic-workflow) pattern (MIT License, Bybren LLC)
+- **Marketing domain knowledge**: Adapted from [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) (MIT License). Copywriting, email sequence, and page CRO skills are adapted and enhanced from that project. Ad copy and landing page HTML skills are custom.
+- **Template design**: AI Captains Academy
+
+## License
+
+MIT
+
+---
+
+Built by [AI Captains](https://www.skool.com/aicaptains)
